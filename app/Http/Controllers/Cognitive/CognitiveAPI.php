@@ -37,7 +37,8 @@ class CognitiveAPI extends Controller
         $url->setQueryVariables($parameters);
         $request->setMethod(\HTTP_Request2::METHOD_POST);
         // Request body
-        $urlData = array('url' => "https://c2.staticflickr.com/6/5283/5685590377_23207b673d_b.jpg");
+        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg';
+        $urlData = array('url' => $urlString);
         $urlDataJsonEncode = json_encode($urlData);
         $request->setBody($urlDataJsonEncode);
         try {
@@ -63,7 +64,8 @@ class CognitiveAPI extends Controller
         $url->setQueryVariables($parameters);
         $request->setMethod(\HTTP_Request2::METHOD_POST);
         // Request body
-        $urlData = array('url' => "https://c2.staticflickr.com/6/5283/5685590377_23207b673d_b.jpg");
+        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg';
+        $urlData = array('url' => $urlString);
         $urlDataJsonEncode = json_encode($urlData);
         $request->setBody($urlDataJsonEncode);
         try {
