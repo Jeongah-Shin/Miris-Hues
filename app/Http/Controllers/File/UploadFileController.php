@@ -43,7 +43,8 @@ class UploadFileController extends Controller
 //        $img->save(public_path() . '/images/' . $file->getClientOriginalName());
 
         $filename = time() . '.' . $file->getClientOriginalExtension();
-        $path = public_path('images/' . $filename);
-        Image::make($file->getRealPath())->resize(468, 249)->save($path);
+        $path = storage_path('images/' . $filename);
+//        Image::make($file->getRealPath())->resize(468, 249)->save($path);
+        Image::make($file->getRealPath())->save($path);
     }
 }
