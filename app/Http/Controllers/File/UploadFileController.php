@@ -4,13 +4,11 @@ namespace App\Http\Controllers\File;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Input;
-use Intervention\Image\Facades\Image;
 use MicrosoftAzure\Storage\Blob\Models\BlockList;
-use MicrosoftAzure\Storage\Common\Internal\ConnectionStringSource;
-use WindowsAzure\Common\ServicesBuilder;
 use MicrosoftAzure\Storage\Common\ServiceException;
+use WindowsAzure\Common\ServicesBuilder;
 
 class UploadFileController extends Controller
 {
@@ -23,7 +21,7 @@ class UploadFileController extends Controller
     {
         $file = $request->file('photo');
 
-        $connectionString = 'DefaultEndpointsProtocol=https;AccountName=' . env('ACCOUNTNAME') .';AccountKey=' . env('ACCOUNTKEY');
+        $connectionString = 'DefaultEndpointsProtocol=https;AccountName=' . env('ACCOUNTNAME') . ';AccountKey=' . env('ACCOUNTKEY');
 
         // Create blob REST proxy.
         $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($connectionString);
@@ -44,6 +42,21 @@ class UploadFileController extends Controller
             $code = $e->getCode();
             $error_message = $e->getMessage();
             echo $code . ": " . $error_message . "<br />";
+        }
+    }
+
+    function OpenConnection()
+    {
+        try {
+            $serverName = 'tcp:' . env('DATABASEADDRESS');
+            $connectionOptions = array('Database' => env('DATABASENAME'),
+                'Uid' => env('DATABASEUID'), 'PWD' => env('DATABASEPASSWORD'));
+            $conn = sqlsrv_connect($serverName, $connectionOptions);
+            if ($conn == false) {
+                echo 'Conn False';
+            }
+        } catch (Exception $e) {
+            echo("Error!");
         }
     }
 }
