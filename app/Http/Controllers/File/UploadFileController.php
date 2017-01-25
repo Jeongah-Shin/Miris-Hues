@@ -69,19 +69,4 @@ class UploadFileController extends Controller
             echo $code . ": " . $error_message . "<br />";
         }
     }
-
-    function OpenConnection()
-    {
-        try {
-            $serverName = 'tcp:' . env('DATABASEADDRESS');
-            $connectionOptions = array('Database' => env('DATABASENAME'),
-                'Uid' => env('DATABASEUID'), 'PWD' => env('DATABASEPASSWORD'));
-            $conn = sqlsrv_connect($serverName, $connectionOptions);
-            if ($conn == false) {
-                echo 'Conn False';
-            }
-        } catch (Exception $e) {
-            echo("Error!");
-        }
-    }
 }
