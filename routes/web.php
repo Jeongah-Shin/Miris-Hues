@@ -24,8 +24,8 @@ Route::get('/tag', 'Cognitive\CognitiveAPI@showTag');
 Route::get('/uploadfile', 'File\UploadFileController@index');
 Route::post('/uploadfile', 'File\UploadFileController@showUploadFile');
 
-Route::get('/images/{filename}', function ($filename) {
-    return Image::make(storage_path() . '/images/' . $filename)->response();
-});
+//Route::get('/images/{filename}', function ($filename) {
+//    return Image::make(storage_path() . '/images/' . $filename)->response();
+//});
 
-Route::get('/database', 'File\UploadFileController@OpenConnection');
+Route::get('/database', 'File\UploadFileController@getImageUrl');
