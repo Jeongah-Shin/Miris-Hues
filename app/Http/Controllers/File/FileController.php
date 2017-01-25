@@ -44,7 +44,7 @@ class FileController extends Controller
         }
     }
 
-    function getImageUrl(Request $request)
+    static function getImageUrl()
     {
         $connectionString = 'DefaultEndpointsProtocol=https;AccountName=' . env('ACCOUNTNAME') . ';AccountKey=' . env('ACCOUNTKEY');
 
@@ -56,9 +56,12 @@ class FileController extends Controller
             $blob_list = $blobRestProxy->listBlobs('images');
             $blobs = $blob_list->getBlobs();
 
-            foreach ($blobs as $blob) {
-                echo $blob->getName() . ": " . $blob->getUrl() . "<br />";
-            }
+//            var_dump($blobs);
+            ksort($blobs);
+//            foreach ($blobs as $blob) {
+//                echo $blob->getName() . ": " . $blob->getUrl() . "<br />";
+//            }
+            return $blobs[count($blobs) - 2]->getUrl();
         } catch (ServiceException $e) {
             // Handle exception based on error codes and messages.
             // Error codes and messages are here:
