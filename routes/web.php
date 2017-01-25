@@ -28,4 +28,4 @@ Route::post('/uploadfile', 'File\UploadFileController@showUploadFile');
 //    return Image::make(storage_path() . '/images/' . $filename)->response();
 //});
 
-Route::get('/database', 'File\UploadFileController@getImageUrl');
+Route::get('/images', 'File\FileController@getImageUrl');

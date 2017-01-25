@@ -4,13 +4,12 @@ namespace App\Http\Controllers\File;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
-use Exception;
 use Illuminate\Http\Request;
 use MicrosoftAzure\Storage\Blob\Models\BlockList;
 use MicrosoftAzure\Storage\Common\ServiceException;
 use WindowsAzure\Common\ServicesBuilder;
 
-class UploadFileController extends Controller
+class FileController extends Controller
 {
     public function index()
     {
