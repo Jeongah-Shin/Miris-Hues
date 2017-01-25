@@ -9,6 +9,7 @@
 namespace App\Http\Controllers\Cognitive;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\File\FileController;
 
 require_once 'HTTP/Request2.php';
 
@@ -37,7 +38,8 @@ class CognitiveAPI extends Controller
         $url->setQueryVariables($parameters);
         $request->setMethod(\HTTP_Request2::METHOD_POST);
         // Request body
-        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg';
+//        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg';
+        $urlString = FileController::getImageUrl();
         $urlData = array('url' => $urlString);
         $urlDataJsonEncode = json_encode($urlData);
         $request->setBody($urlDataJsonEncode);
@@ -64,7 +66,8 @@ class CognitiveAPI extends Controller
         $url->setQueryVariables($parameters);
         $request->setMethod(\HTTP_Request2::METHOD_POST);
         // Request body
-        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg';
+//        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg
+        $urlString = FileController::getImageUrl();
         $urlData = array('url' => $urlString);
         $urlDataJsonEncode = json_encode($urlData);
         $request->setBody($urlDataJsonEncode);

@@ -4,13 +4,12 @@ namespace App\Http\Controllers\File;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
-use Exception;
 use Illuminate\Http\Request;
 use MicrosoftAzure\Storage\Blob\Models\BlockList;
 use MicrosoftAzure\Storage\Common\ServiceException;
 use WindowsAzure\Common\ServicesBuilder;
 
-class UploadFileController extends Controller
+class FileController extends Controller
 {
     public function index()
     {
@@ -45,7 +44,7 @@ class UploadFileController extends Controller
         }
     }
 
-    function getImageUrl(Request $request)
+    static function getImageUrl()
     {
         $connectionString = 'DefaultEndpointsProtocol=https;AccountName=' . env('ACCOUNTNAME') . ';AccountKey=' . env('ACCOUNTKEY');
 
@@ -57,9 +56,12 @@ class UploadFileController extends Controller
             $blob_list = $blobRestProxy->listBlobs('images');
             $blobs = $blob_list->getBlobs();
 
-            foreach ($blobs as $blob) {
-                echo $blob->getName() . ": " . $blob->getUrl() . "<br />";
-            }
+//            var_dump($blobs);
+            ksort($blobs);
+//            foreach ($blobs as $blob) {
+//                echo $blob->getName() . ": " . $blob->getUrl() . "<br />";
+//            }
+            return $blobs[count($blobs) - 2]->getUrl();
         } catch (ServiceException $e) {
             // Handle exception based on error codes and messages.
             // Error codes and messages are here:
@@ -67,21 +69,6 @@ class UploadFileController extends Controller
             $code = $e->getCode();
             $error_message = $e->getMessage();
             echo $code . ": " . $error_message . "<br />";
-        }
-    }
-
-    function OpenConnection()
-    {
-        try {
-            $serverName = 'tcp:' . env('DATABASEADDRESS');
-            $connectionOptions = array('Database' => env('DATABASENAME'),
-                'Uid' => env('DATABASEUID'), 'PWD' => env('DATABASEPASSWORD'));
-            $conn = sqlsrv_connect($serverName, $connectionOptions);
-            if ($conn == false) {
-                echo 'Conn False';
-            }
-        } catch (Exception $e) {
-            echo("Error!");
         }
     }
 }
