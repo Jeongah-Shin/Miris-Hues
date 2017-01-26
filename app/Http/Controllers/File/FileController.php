@@ -11,28 +11,33 @@ use WindowsAzure\Common\ServicesBuilder;
 
 class FileController extends Controller
 {
-    public function index()
-    {
-        return view('file/upload');
-    }
+//    public function index()
+//    {
+//        return view('file/upload');
+//    }
 
-    public function showUploadFile(Request $request)
+    public function storageFileUpload(Request $request)
     {
         $file = $request->file('photo');
 
+        // Azure Blob Storage 연결에 필요한 문자열
         $connectionString = 'DefaultEndpointsProtocol=https;AccountName=' . env('ACCOUNTNAME') . ';AccountKey=' . env('ACCOUNTKEY');
 
         // Create blob REST proxy.
+        // Azure Blob Storage에 연결
         $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($connectionString);
 
         try {
-            //Upload blob
+            // Upload blob
+            // 파일 이름을 시간으로 변경
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $blockId = 1;
             $blocklist = new BlockList();
             $blocklist->addLatestEntry(md5($blockId));
             $content = file_get_contents($file->getRealPath());
+            // 이미지 파일 업로드를 위한 블럭을 만들고
             $blobRestProxy->createBlobBlock('images', $filename, md5($blockId), $content);
+            // 이미지를 업로드
             $blobRestProxy->commitBlobBlocks("images", $filename, $blocklist->getEntries());
         } catch (ServiceException $e) {
             // Handle exception based on error codes and messages.
@@ -46,21 +51,23 @@ class FileController extends Controller
 
     static function getImageUrl()
     {
+        // Azure Blob Storage 연결에 필요한 문자열
         $connectionString = 'DefaultEndpointsProtocol=https;AccountName=' . env('ACCOUNTNAME') . ';AccountKey=' . env('ACCOUNTKEY');
 
         // Create blob REST proxy.
+        // Azure Blob Storage에 연결
         $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($connectionString);
 
         try {
             // List blobs.
+            // 서버에 저장되어 있는 파일들의 목록을 가져온다
             $blob_list = $blobRestProxy->listBlobs('images');
             $blobs = $blob_list->getBlobs();
 
-//            var_dump($blobs);
+            // 키 값을 사용하여 정렬
             ksort($blobs);
-//            foreach ($blobs as $blob) {
-//                echo $blob->getName() . ": " . $blob->getUrl() . "<br />";
-//            }
+
+            // URL을 반환
             return $blobs[count($blobs) - 2]->getUrl();
         } catch (ServiceException $e) {
             // Handle exception based on error codes and messages.

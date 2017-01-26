@@ -15,11 +15,6 @@ require_once 'HTTP/Request2.php';
 
 class CognitiveAPI extends Controller
 {
-    public function index()
-    {
-        return view('cognitive/cognitive');
-    }
-
     public function showText()
     {
         $request = new \Http_Request2('https://api.projectoxford.ai/vision/v1.0/ocr');
@@ -38,7 +33,6 @@ class CognitiveAPI extends Controller
         $url->setQueryVariables($parameters);
         $request->setMethod(\HTTP_Request2::METHOD_POST);
         // Request body
-//        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg';
         $urlString = FileController::getImageUrl();
         $urlData = array('url' => $urlString);
         $urlDataJsonEncode = json_encode($urlData);
@@ -66,7 +60,6 @@ class CognitiveAPI extends Controller
         $url->setQueryVariables($parameters);
         $request->setMethod(\HTTP_Request2::METHOD_POST);
         // Request body
-//        $urlString = 'https://miris.blob.core.windows.net/images/' . '1485183837.jpg
         $urlString = FileController::getImageUrl();
         $urlData = array('url' => $urlString);
         $urlDataJsonEncode = json_encode($urlData);
