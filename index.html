@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta property="og:url" content="https://b8b18f49-0ee0-4-231-b9ee.azurewebsites.net/"/>
+    <meta property="og:title" content="My Cognitive App"/>
+    <meta property="og:description" content="내용"/>
+    <meta property="og:image" content="이미지 경로"/>
+    <link rel="stylesheet" type="text/css" href="demo.css">
+    <title>Cognitive API Demo</title>
+</head>
+<body bgcolor="#add8e6">
+<div style="font-weight: bold; font-size:5.0em; font-family: '10X10 Bold'; text-align: center; color: #FA8072;">
+    Cognitive API App
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<div class="canvas">
+    <canvas style="alignment: center;" id="myCanvas" width="1000" height="800">
+    </canvas>
+</div>
+<div class="filebox">
+    <form enctype="multipart/form-data" action="" id="form" method="POST">
+        <input type="hidden" name="MAX_FILE_SIZE" value="30000000">
+        <input type="file" id="input" name="userfile">
+        <label for="input">사진 선택</label>
+    </form>
+    <p id="tags"></p>
+</div>
+
+<script src="ImageTools.js"></script>
+<script>
+    var canvas = document.getElementById('myCanvas');
+    var ctx = canvas.getContext('2d');
+    var upload = document.getElementById('input');
+    var img = new Image();
+    var filename = null;
+    var fullPathName = "https://b8b18f49-0ee0-4-231-b9ee.azurewebsites.net/";
+    var form = document.getElementById('form');
+    var emotion = {
+        0: "anger",
+        1: "contempt",
+        2: "disgust",
+        3: "fear",
+        4: "happiness",
+        5: "neutral",
+        6: "sadness",
+        7: "surprise"
+    };
+    var imgPath;
+    var imgBlob;
+
+    var emotionImage = new Array(8);
+
+    for (i = 0; i < emotionImage.length; i++) {
+        emotionImage[i] = new Image();
+        emotionImage[i].src = fullPathName + emotion[i] + ".png";
+    }
+
+    form.onchange = function (e) {
+        if (img.src.length > 10)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ImageTools.resize(e.target.files[0], {
+            width: 800,
+            height: 600
+        }, function (blob, didItResize) {
+            imgBlob = blob;
+            img.src = URL.createObjectURL(imgBlob);
+        })
+    };
+
+    img.onload = function () {
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width, img.height);
+
+        $(function () {
+            var form = $('form')[0];
+            var fullPath = upload.value;
+            if (fullPath) {
+                var startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
+                filename = fullPath.substring(startIndex);
+                if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0)
+                    filename = filename.substring(1);
+            }
+
+            imgPath = fullPathName;
+            imgPath += filename;
+            var formData = new FormData(form);
+            formData.append("userfile", imgBlob, filename);
+            // var formData = new FormData();
+            // 왜 formData = new FormData(); 빈 폼에서는 안 되는 걸까?
+            // -> 빈 폼은 enctype이 설정돼있지 않기 때문. 속성을 어떻게 바꿔줄까...
+
+            $.ajax({
+                url: './upload.php',
+                processData: false,
+                contentType: false,
+                data: formData,
+                type: 'POST'
+            })
+                    .done(function () {
+                        $.ajax({
+                            url: "https://api.projectoxford.ai/emotion/v1.0/recognize?",
+                            beforeSend: function (xhrObj) {
+                                xhrObj.setRequestHeader("Content-Type", "application/json");
+                                xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", "a71c6a11d7614c71b24e96fcb35179b1");
+                            },
+                            type: "POST",
+                            data: "{" +
+                            "\"url\":\"" + imgPath + "\"}"
+                        })
+                                .done(function (response) {
+                                    for (i = 0; i < response.length; i++) {
+                                        var emotionArray = Object.keys(response[i]['scores']).map(function (key) {
+                                            return parseFloat(response[i]['scores'][key]);
+                                        });
+                                        var maxEmotion = emotionArray.reduce((iMax, x, i, emotionArray) => x > emotionArray[iMax] ? i : iMax, 0);
+
+                                        var top = response[i]['faceRectangle'].top;
+                                        var left = response[i]['faceRectangle'].left;
+                                        var width = response[i]['faceRectangle'].width;
+                                        var height = response[i]['faceRectangle'].height;
+
+                                        ctx.drawImage(emotionImage[maxEmotion], 0, 0, emotionImage[maxEmotion].width, emotionImage[maxEmotion].height, left - 5, top - 10, width, height);
+
+                                        ctx.beginPath();
+                                        ctx.lineWidth = "6";
+                                        ctx.strokeStyle = "red";
+                                        ctx.rect(left, top, width, height);
+                                        ctx.stroke();
+                                    }
+                                })
+
+                                .fail(function (response) {
+                                    alert(JSON.stringify(response));
+                                });
+
+                        var params = {
+                            "visualFeatures": "Tags",
+                            "language": "en"
+                        };
+
+                        $.ajax({
+                            url: "https://api.projectoxford.ai/vision/v1.0/analyze?" + $.param(params),
+                            beforeSend: function (xhrObj) {
+                                xhrObj.setRequestHeader("Content-Type", "application/json");
+                                xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", "bca72475d52c4906b7eb422ab7ac1788");
+                            },
+                            type: "POST",
+                            data: "{" +
+                            "\"url\":\"" + imgPath + "\"}"
+                        })
+                                .done(function (response) {
+                                    for (i = 0; i < response['tags'].length; i++)
+                                        document.getElementById('tags').innerHTML += response['tags'][i].name += "<br>";
+                                })
+
+                                .fail(function (response) {
+                                    alert(JSON.stringify(response));
+                                });
+                    });
+        });
+    };
+</script>
+<div id="fb-root"></div>
+<script>
+    function statusChangeCallback(response) {
+        console.log('statusChangeCallback');
+        console.log(response);
+
+        if (response.status === 'connected') {
+            testAPI();
+        } else if (response.status === 'not_authorized') {
+            document.getElementById('status').innerHTML = 'Please log ' +
+                    'into this app.';
+        } else {
+            document.getElementById('status').innerHTML = 'Please log ' +
+                    'into Facebook.';
+        }
+    }
+
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '1817460981872715',
+            cookie: true,
+            xfbml: true,
+            version: 'v2.8'
+        });
+
+        FB.getLoginStatus(function (response) {
+            statusChangeCallback(response);
+        });
+    };
+
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    function testAPI() {
+        console.log('Welcome! Fetching your information.... ');
+        FB.api('/me', function (response) {
+            console.log('Successful login for: ' + response.name);
+            document.getElementById('status').innerHTML =
+                    'Thanks for logging in, ' + response.name + '!';
+        });
+    }
+
+    /*document.getElementById('shareBtn').onclick = function () {
+     FB.ui({
+     method: 'feed',
+     link: 'http://naver.com'
+     })
+     }*/
+
+    // 위에 shareBtn은 좀 더 알아보도록 하기
+
+    /*function fb_logout(){
+     FB.logout(function(response){
+     alert("Hi");
+     document.getElementById('status').innerHTML ='response';
+     });
+     }*/
+
+
+</script>
+<!--<fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button>
+<p onclick="fb_logout()">Logout</p>-->
+<div class="fb-share-button" data-href="https://b8b18f49-0ee0-4-231-b9ee.azurewebsites.net/" data-layout="button"
+     data-size="large" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank"
+                                                    href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fb8b18f49-0ee0-4-231-b9ee.azurewebsites.net%2F&amp;src=sdkpreparse">공유하기</a>
+</div>
+<!--<div id="status">
+</div>-->
+</body>
+</html>
