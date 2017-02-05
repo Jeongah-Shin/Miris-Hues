@@ -73,7 +73,7 @@ class CognitiveAPI extends Controller
     }
     
     public function showDescription() {
-        $request = new Http_Request2('https://westus.api.cognitive.microsoft.com/vision/v1.0/analyze');
+        $request = new \Http_Request2('https://westus.api.cognitive.microsoft.com/vision/v1.0/analyze');
         $url = $request->getUrl();
 
         $headers = array(
