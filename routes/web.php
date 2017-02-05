@@ -19,6 +19,7 @@ Route::get('/', function () {
 // Cognitive API
 Route::get('/text', 'Cognitive\CognitiveAPI@showText');
 Route::get('/tag', 'Cognitive\CognitiveAPI@showTag');
+Route::get('/description', 'Cognitive\CognitiveAPI@showDescription');
 
 // File
 // 업로드 확인을 위한 라우팅
